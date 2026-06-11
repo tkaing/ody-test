@@ -2,7 +2,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { eq, and, gte, lt, inArray } from "drizzle-orm";
 import { type Db } from "../db";
-import { orders, orderItems, menuItems } from "../db/schema";
+import { orders, orderItems, menuItems, settings } from "../db/schema";
 import { OrderSchema, OrderStatusSchema, ErrorSchema } from "./schemas";
 
 const QuerySchema = z.object({
@@ -77,6 +77,17 @@ export function registerOrdersRoutes(app: OpenAPIHono, db: Db) {
 
   app.openapi(createRoute_, async (c) => {
     const { customerId, total, items } = c.req.valid("json");
+
+    // Réglages métier : lire la ligne unique de settings (fallback sur les defaults du schéma)
+    const [config] = await db.select().from(settings).where(eq(settings.id, 1));
+    const isOpen = config?.isOpen ?? true;
+    const autoAccept = config?.autoAccept ?? false;
+
+    // isOpen : refuser toute nouvelle commande si le restaurant est fermé (fail-fast)
+    if (!isOpen) {
+      return c.json({ error: "Le restaurant est fermé : nouvelles commandes désactivées" }, 422);
+    }
+
     const menuItemIds = items.map((i) => i.menuItemId);
 
     if (new Set(menuItemIds).size !== menuItemIds.length) {
@@ -114,10 +125,13 @@ export function registerOrdersRoutes(app: OpenAPIHono, db: Db) {
       );
     }
 
+    // autoAccept : la commande naît confirmée au lieu de pending
+    const initialStatus = autoAccept ? "confirmed" : "pending";
+
     const order = await db.transaction(async (tx) => {
       const [newOrder] = await tx
         .insert(orders)
-        .values({ customerId, status: "pending", total })
+        .values({ customerId, status: initialStatus, total })
         .returning();
       if (!newOrder) throw new Error("Échec de l'insertion de la commande");
       await tx.insert(orderItems).values(

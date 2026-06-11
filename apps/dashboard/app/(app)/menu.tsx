@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetMenuCategories,
@@ -89,16 +89,20 @@ export default function MenuScreen() {
     },
   });
 
+  const itemsByCategoryId = useMemo(
+    () =>
+      items.reduce<Record<number, MenuItem[]>>((acc, item) => {
+        const list = acc[item.categoryId] ?? [];
+        list.push(item);
+        acc[item.categoryId] = list;
+        return acc;
+      }, {}),
+    [items]
+  );
+
   if (catLoading || itemLoading) return <LoadingState message="Chargement du menu…" />;
   if (catError || itemError)
     return <ErrorState onRetry={() => { void catRefetch(); void itemRefetch(); }} />;
-
-  const itemsByCategoryId = items.reduce<Record<number, MenuItem[]>>((acc, item) => {
-    const list = acc[item.categoryId] ?? [];
-    list.push(item);
-    acc[item.categoryId] = list;
-    return acc;
-  }, {});
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>

@@ -1,6 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import type { OpenAPIHono } from "@hono/zod-openapi";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { canTransition } from "@ody/shared";
 import { type Db } from "../db";
 import { orders } from "../db/schema";
@@ -53,10 +53,11 @@ export function registerOrdersStatusRoutes(app: OpenAPIHono, db: Db) {
     const [updated] = await db
       .update(orders)
       .set({ status: nextStatus, updatedAt: new Date() })
-      .where(eq(orders.id, id))
+      .where(and(eq(orders.id, id), eq(orders.status, order.status)))
       .returning();
 
-    if (!updated) throw new Error("Échec de la mise à jour");
+    // Null means another concurrent request already changed the status
+    if (!updated) return c.json({ error: "Transition invalide : statut modifié entre-temps" }, 422);
     return c.json(updated, 200);
   });
 }

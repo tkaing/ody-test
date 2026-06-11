@@ -25,7 +25,7 @@ export function StatusActions({ status, onTransition, loading }: Props) {
           onPress={() => { onTransition(next); }}
           loading={loading}
         >
-          {STATUS_CONFIG[next].label}
+          {STATUS_CONFIG[next].actionLabel ?? STATUS_CONFIG[next].label}
         </Button>
       ))}
     </View>

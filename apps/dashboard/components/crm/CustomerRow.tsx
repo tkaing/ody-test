@@ -32,7 +32,7 @@ export function CustomerRow({ customer }: Props) {
         </View>
         <View style={styles.stats}>
           <Badge variant="info" size="sm">
-            {customer.orderCount} cmd
+            {customer.orderCount} commande{customer.orderCount > 1 ? "s" : ""}
           </Badge>
           <Text style={styles.spend}>{formatPrice(customer.totalSpend)}</Text>
         </View>

@@ -3,13 +3,13 @@ import type { SelectOption } from "@/components/ui/Select";
 
 type BadgeVariant = "default" | "success" | "warning" | "error" | "info" | "neutral";
 
-export const STATUS_CONFIG: Record<OrderStatus, { label: string; variant: BadgeVariant }> = {
+export const STATUS_CONFIG: Record<OrderStatus, { label: string; actionLabel?: string; variant: BadgeVariant }> = {
   pending:   { label: "En attente",     variant: "warning" },
   confirmed: { label: "Confirmée",      variant: "info" },
-  preparing: { label: "En préparation", variant: "info" },
+  preparing: { label: "En préparation", actionLabel: "Je prépare", variant: "info" },
   ready:     { label: "Prête",          variant: "success" },
   completed: { label: "Terminée",       variant: "neutral" },
-  cancelled: { label: "Annulée",        variant: "error" },
+  cancelled: { label: "Annulée",        actionLabel: "Annuler", variant: "error" },
 };
 
 export const STATUS_OPTIONS: SelectOption<OrderStatus>[] = (

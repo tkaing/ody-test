@@ -25,7 +25,7 @@ export function CreateOrderModal({ visible, onClose, onConfirm, loading }: Props
   const { data: customers = [] } = useGetCustomers();
   const { data: menuItems = [] } = useGetMenuItems({ available: GetMenuItemsAvailable.true });
 
-  const customerOptions: SelectOption<number>[] = (customers as { id: number; name: string }[]).map((c) => ({
+  const customerOptions: SelectOption<number>[] = customers.map((c) => ({
     label: c.name,
     value: c.id,
   }));
@@ -59,7 +59,8 @@ export function CreateOrderModal({ visible, onClose, onConfirm, loading }: Props
       total,
       items: itemQtys.map(({ menuItemId, quantity }) => ({ menuItemId, quantity })),
     });
-    handleClose();
+    // Do not call handleClose() here — the parent closes the modal on mutation success.
+    // On failure, the modal stays open so the user can retry without losing their input.
   }
 
   const stepTitles = { 1: "Sélectionner un client", 2: "Choisir les articles", 3: "Récapitulatif" };

@@ -112,6 +112,48 @@ describe("Phase 1 — orders", () => {
     expect(data.error).toMatch(/total/i);
   });
 
+  it("rejet création si resto fermé", async () => {
+    const [item, customer] = await Promise.all([setupCategoryAndItem(), setupCustomer()]);
+    await testApp.request("/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isOpen: false }),
+    });
+    const res = await testApp.request("/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customerId: customer.id,
+        total: item.price,
+        items: [{ menuItemId: item.id, quantity: 1 }],
+      }),
+    });
+    expect(res.status).toBe(422);
+    const data = await res.json();
+    expect(data.error).toMatch(/fermé/i);
+  });
+
+  it("auto-accept → statut initial confirmed", async () => {
+    const [item, customer] = await Promise.all([setupCategoryAndItem(), setupCustomer()]);
+    await testApp.request("/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ autoAccept: true }),
+    });
+    const res = await testApp.request("/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customerId: customer.id,
+        total: item.price,
+        items: [{ menuItemId: item.id, quantity: 1 }],
+      }),
+    });
+    expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data.status).toBe("confirmed");
+  });
+
   it("GET liste des commandes", async () => {
     const res = await testApp.request("/orders");
     expect(res.status).toBe(200);
@@ -125,9 +167,14 @@ describe("Phase 1 — orders", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ customerId: customer.id, total: item.price, items: [{ menuItemId: item.id, quantity: 1 }] }),
     });
-    const res = await testApp.request("/orders?status=pending");
-    const data = await res.json();
-    expect(data.length).toBeGreaterThan(0);
-    expect(data.every((o: any) => o.status === "pending")).toBe(true);
+    const resPending = await testApp.request("/orders?status=pending");
+    const pending = await resPending.json();
+    expect(pending.length).toBeGreaterThan(0);
+    expect(pending.every((o: any) => o.status === "pending")).toBe(true);
+
+    // A filter for a different status must return an empty list (not all orders)
+    const resCompleted = await testApp.request("/orders?status=completed");
+    const completed = await resCompleted.json();
+    expect(completed).toHaveLength(0);
   });
 });

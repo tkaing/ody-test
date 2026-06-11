@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Link, usePathname } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { usePathname, useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, fontSize, fontWeight, layout, radius, spacing } from "@/constants/tokens";
 
 type NavItem = {
@@ -20,6 +20,7 @@ const NAV_ITEMS: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -32,8 +33,12 @@ export function Sidebar() {
         {NAV_ITEMS.map((item) => {
           const isActive = pathname.startsWith(item.href.replace("/(app)", ""));
           return (
-            <Link key={item.href} href={item.href as never} style={styles.linkWrapper}>
-              <View style={[styles.navItem, isActive && styles.navItemActive]}>
+            <Pressable
+              key={item.href}
+              onPress={() => { router.push(item.href as never); }}
+              style={styles.navItem}
+            >
+              <View style={[styles.navItemInner, isActive && styles.navItemActive]}>
                 <Ionicons
                   name={isActive ? item.iconActive : item.icon}
                   size={18}
@@ -44,18 +49,19 @@ export function Sidebar() {
                   {item.label}
                 </Text>
               </View>
-            </Link>
+            </Pressable>
           );
         })}
       </View>
 
       <View style={styles.footer}>
-        <Link href="/(app)/ui-library" style={styles.linkWrapper}>
-          <View style={styles.devLink}>
-            <Ionicons name="color-palette-outline" size={14} color={colors.ui.sidebarText} />
-            <Text style={styles.devLinkText}>UI Library</Text>
-          </View>
-        </Link>
+        <Pressable
+          onPress={() => { router.push("/(app)/ui-library"); }}
+          style={styles.devLink}
+        >
+          <Ionicons name="color-palette-outline" size={14} color={colors.ui.sidebarText} />
+          <Text style={styles.devLinkText}>UI Library</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -90,10 +96,10 @@ const styles = StyleSheet.create({
     gap: spacing[0.5],
     paddingHorizontal: spacing[3],
   },
-  linkWrapper: {
-    textDecorationLine: "none",
-  },
   navItem: {
+    width: "100%",
+  },
+  navItemInner: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: spacing[2],

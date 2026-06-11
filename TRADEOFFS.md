@@ -69,3 +69,11 @@ Les tests d'intégration backend (Vitest) tournent sur une **vraie** base, et c'
 Conséquence : lancer `pnpm test` vide la base. Comme le flux E2E re-seede juste avant de tourner (cf. README), l'ordre habituel reste sûr ; mais il ne faut pas lancer `pnpm test` sur une base dont on veut conserver le contenu.
 
 La solution propre serait une **base de test dédiée** (`ody_test`) : comme le helper lit `process.env.DATABASE_URL`, il suffirait de lancer Vitest backend avec cette variable surchargée et d'appliquer les migrations sur cette base. Les tests deviendraient totalement isolés des données de dev/E2E, et l'ordre des commandes n'aurait plus d'importance. Non implémenté pour rester sur un setup Docker à une seule base, suffisant dans le timebox.
+
+---
+
+## 10. Réglages métier partiellement branchés
+
+Sur les 5 réglages de la page Settings, **2 pilotent réellement le backend** : `isOpen` (rejet `422` des nouvelles commandes si le resto est fermé) et `autoAccept` (commande créée en `confirmed` au lieu de `pending`). Ce sont les deux réglages cités en exemple par l'assignment (« service availability, auto-accept ») et les seuls qui se rattachent naturellement au flux de commande — voir `ARCHITECTURE.md` §4.
+
+Les 3 autres sont **persistés mais informatifs** : `restaurantName` et `openingHours` sont purement descriptifs, et `prepTime` n'est rattaché à aucun flux métier (pas de notion d'ETA commande dans le périmètre actuel). Les brancher serait possible (afficher un délai estimé sur la commande à partir de `prepTime`, parser `openingHours` en grille horaire qui ouvre/ferme automatiquement le service) mais sort du scope : l'assignment valorise le jugement de périmètre autant que la complétude, et ces deux-là n'apportaient pas de logique métier démonstrative au regard de leur coût.

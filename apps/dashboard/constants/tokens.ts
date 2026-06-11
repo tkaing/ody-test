@@ -25,6 +25,12 @@ export const shadow = {
   lg: { boxShadow: "0 4px 16px rgba(0,0,0,0.12)" },
 } as const;
 
+/** Appends an alpha byte to a 6-char hex color string (e.g. "#2563eb", 0.1 → "#2563eb1a"). */
+export function hexWithOpacity(hex: string, opacity: number): string {
+  const alpha = Math.round(opacity * 255).toString(16).padStart(2, "0");
+  return `${hex}${alpha}`;
+}
+
 export const layout = {
   sidebarWidth: 240,
   contentMaxWidth: 1200,

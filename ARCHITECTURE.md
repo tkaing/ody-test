@@ -36,7 +36,7 @@ Exemple vivant : une commande est définie une seule fois dans `schema.ts` ; sa 
 
 ## 3. Les flux principaux de l'app
 
-- **Créer une commande** ✅ — page Orders → `CreateOrderModal` (3 étapes) → `usePostOrders` → `POST /orders` (`services/backend/src/routes/orders.ts` : rejet items indispo + total recalculé) → invalidation → commande `pending` visible.
+- **Créer une commande** ✅ — page Orders → `CreateOrderModal` (3 étapes) → `usePostOrders` → `POST /orders` (`services/backend/src/routes/orders.ts` : réglages métier lus depuis `settings` — rejet `422` si resto fermé · `confirmed` au lieu de `pending` si `autoAccept` — puis rejet items indispo + total recalculé) → invalidation → commande visible.
 - **Faire avancer un statut** ✅ — `OrderDetailModal` → `StatusActions` (boutons selon `ORDER_STATUS_TRANSITIONS[status]`) → `usePatchOrdersIdStatus` → `PATCH /orders/:id/status` → seule la transition suivante est offerte.
 - **Gérer le menu** ✅ — page Menu → CRUD catégories/items via `CategoryModal` / `ItemModal` · toggle `available` via `MenuItemRow` · groupement client-side par `categoryId`.
 - **CRM client** ✅ — page CRM → search debouncé → `useGetCustomers({ q })` → `GET /customers` (LEFT JOIN + `count` + `sum` + 3 commandes récentes) → `CustomerRow` enrichi.
@@ -77,6 +77,9 @@ Les schémas de validation des routes sont générés depuis le schéma Drizzle 
 
 **Frontend : une page n'assemble que des sous-composants ; la logique vit dans les hooks.**
 Chaque page de `app/(app)/` se contente de brancher les hooks Orval et de composer des sous-composants focalisés (`OrderFilters`, `StatusActions`, `CreateOrderModal`, `CustomerRow`…). Aucune logique métier ni `fetch` brut dans un composant de page. *Alternative écartée* : des pages monolithiques qui font fetch + état + rendu — plus rapide à écrire, mais vite illisible et intestable. Un fichier qui dépasse ~150 lignes est traité comme un signal de découpage. Effet : les sous-composants restent présentationnels et réutilisables, la donnée passe par les hooks générés.
+
+**Les réglages métier (`settings`) pilotent réellement la création de commande, pas seulement l'affichage.**
+`POST /orders` lit la ligne `settings` avant d'accepter : `isOpen=false` rejette toute nouvelle commande (`422`), `autoAccept=true` fait naître la commande en `confirmed` au lieu de `pending`. La règle vit côté serveur — un toggle dans l'UI Settings change le comportement du back, pas juste un libellé. *Alternative écartée* : laisser ces réglages purement décoratifs (persistés mais inertes) — l'UI promettrait alors un comportement que l'API n'applique pas. *Périmètre borné assumé* : `prepTime` et `openingHours` restent informatifs (aucun flux de commande ne les consomme — voir `TRADEOFFS.md`). La lecture utilise un fallback sur les defaults du schéma, donc le chemin reste correct même si la ligne settings n'a jamais été initialisée.
 
 **Design system : tokens centralisés → primitives → vitrine `/ui-library`.**
 Une seule source de style (`apps/dashboard/constants/tokens.ts` : couleurs, typo, spacing, radius, ombres) ; aucune valeur magique hors de là. Les primitives (`components/ui/` : Button, Input, Modal, Table, Badge, Toast…) ne lisent que les tokens, et la route `/ui-library` les présente toutes avec leurs états. Les constantes domaine liées à l'UI (labels de statut, couleurs par statut) vivent dans `constants/`, pas dans les composants. *Alternative écartée* : des styles inline par écran — incohérence garantie et thème impossible à faire évoluer d'un point central.

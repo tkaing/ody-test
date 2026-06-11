@@ -272,14 +272,33 @@ fondation (backend) puis remontée de la chaîne d'archi (primitif → sous-comp
 - [x] README : prérequis · lancement local · seed (idempotent) · explore the app · tableau scripts · tests (prérequis DB/seed clarifiés) · UI library
 - [x] Note tradeoffs (`TRADEOFFS.md`) : 9 compromis documentés (DB locale, form state, auth, optimistic updates, base de test partagée…)
 - [x] Note architecture (`ARCHITECTURE.md`) : packages · chaîne d'archi · flux · décisions clés (PATCH /status, centimes, snapshot, 2-queries, drizzle-zod, frontend structure, design system) · stratégie de test · méthode IA (mode plan) · déplacé à la racine
-- [ ] [U] Repo GitHub public créé et code poussé
+- [x] [U] Repo GitHub public créé et code poussé
 - [ ] [U] (optionnel) Walkthrough Loom
 
 **Code review** *(nécessite le repo git — à faire après le push)*
-- [ ] `/code-review ultra` sur la phase 1 : findings corrigés
-- [ ] `/code-review ultra` sur la phase 2 : findings corrigés
-- [ ] `/code-review ultra` sur la phase 3 : findings corrigés
-- [ ] `/code-review ultra` sur la phase 4 : findings corrigés
+- [x] `/code-review ultra` sur la phase 1 : findings corrigés
+- [x] `/code-review ultra` sur la phase 2 : findings corrigés
+- [x] `/code-review ultra` sur la phase 3 : findings corrigés
+- [x] `/code-review ultra` sur la phase 4 : findings corrigés
+
+### Réglages métier branchés sur la création de commande (`isOpen` + `autoAccept`)
+
+**Pourquoi** : la page Settings persistait `isOpen` et `autoAccept` (réglages cités en exemple par
+l'assignment, l. 135 : *« service availability, auto-accept »*) mais le back les ignorait — les
+libellés UI promettaient un comportement non implémenté. On branche les deux réglages sur
+`POST /orders` pour démontrer la *« deliberate backend behavior »* attendue (assignment l. 146).
+Périmètre volontairement borné : `prepTime` / `openingHours` restent informatifs (aucun flux ne les
+rattache → enforcement = hors-scope). Voir `phases/phase-5.md`.
+
+**Revue live par groupe de fichiers** *(checkpoint en 5 temps avant de cocher — cf. `CLAUDE.md`)*
+
+- [x] **5b-a — Logique métier `POST /orders`** : lire les settings · rejeter `422` si `!isOpen` (resto fermé) · créer en `confirmed` si `autoAccept`, sinon `pending`
+- [x] **5b-b — Tests Vitest** *(`__tests__/phase1/orders.test.ts`)* : rejet création si resto fermé · auto-accept → statut initial `confirmed`
+- [x] **5b-c — Notes livrables** : `ARCHITECTURE.md` (réglages → flux création) + `TRADEOFFS.md` (périmètre borné : `prepTime`/`openingHours` informatifs)
+
+**Revue critique**
+- [x] `pnpm typecheck` + `pnpm lint` : zéro erreur
+- [x] `pnpm test` : suite orders verte (nouveaux cas inclus)
 
 ---
 

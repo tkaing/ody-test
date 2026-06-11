@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Card } from "@/components/ui";
-import { colors, spacing, fontSize, fontWeight } from "@/constants/tokens";
+import { colors, spacing, fontSize, fontWeight, hexWithOpacity } from "@/constants/tokens";
 
 type Props = {
   label: string;
@@ -15,7 +15,7 @@ export function KpiCard({ label, value, icon, iconColor }: Props) {
   return (
     <Card variant="default" padding="md" style={styles.card}>
       <View style={styles.iconRow}>
-        <View style={[styles.iconBg, { backgroundColor: color + "1a" }]}>
+        <View style={[styles.iconBg, { backgroundColor: hexWithOpacity(color, 0.1) }]}>
           <Ionicons name={icon} size={20} color={color} />
         </View>
       </View>

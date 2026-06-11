@@ -21,7 +21,7 @@ type Props<T> = {
 export function Table<T>({ columns, data, keyExtractor, onRowPress, emptyComponent }: Props<T>) {
   return (
     <View style={styles.container}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.table}>
           <View style={styles.headerRow}>
             {columns.map((col) => (

@@ -10,6 +10,7 @@ const db = drizzle(sql);
 async function seed() {
   console.log("🌱 Nettoyage des tables...");
   await db.execute(drizzleSql`TRUNCATE menu_categories, menu_items, customers, orders, order_items CASCADE`);
+  await db.execute(drizzleSql`INSERT INTO settings (id, restaurant_name) VALUES (1, 'Mon Restaurant') ON CONFLICT (id) DO UPDATE SET restaurant_name = 'Mon Restaurant'`);
 
   // --- Catégories ---
   console.log("📂 Insertion des catégories...");
