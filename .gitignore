@@ -1,0 +1,16 @@
+node_modules
+dist
+.expo
+.turbo
+*.local
+.env
+.env.*
+!.env.example
+.dev.vars
+services/backend/openapi.json
+packages/api-client/src/generated
+packages/api-client/src/model
+coverage
+test-results
+playwright-report
+assignment.md
