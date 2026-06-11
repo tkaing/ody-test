@@ -46,8 +46,9 @@ See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how these connect (the `Drizzle →
 
 ```bash
 # 1. Clone and install
-git clone <repo-url>
-cd ody
+corepack enable                                    # once per machine
+git clone git@github.com:tkaing/ody-test.git
+cd ody-test
 pnpm install
 
 # 2. Start PostgreSQL (--wait blocks until the DB is healthy)
